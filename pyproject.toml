@@ -1,0 +1,23 @@
+[project]
+name = "av1-encoder"
+version = "3.0.0"
+description = "Batch SVT-AV1 + Opus encoder for a video library, with a web dashboard and job queue"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.141.1",
+    "psutil>=7.2.2",
+    "requests>=2.34.2",
+    "uvicorn>=0.52.4",
+    "websockets>=13.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "httpx2>=2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

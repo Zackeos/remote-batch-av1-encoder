@@ -1,0 +1,36 @@
+# Local configuration (copy config.example.json to config.json)
+config.json
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Default media folders and encoder temp files
+downloads/
+.temp_enc_*/
+.temp_chunked_*/
+.autotune_tests/
+*.part
+
+# Media files
+*.mkv
+*.mp4
+*.webm
+*.avi
+*.ts
+*.mov
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~

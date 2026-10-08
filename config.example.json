@@ -1,0 +1,5 @@
+{
+  "input_dir": "/path/to/input",
+  "output_dir": "/path/to/output",
+  "audio_language": "eng"
+}

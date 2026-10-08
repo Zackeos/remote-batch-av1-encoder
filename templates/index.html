@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AV1 Encoder</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <aside>
+        <div class="logo">AV1 Encoder</div>
+        <button class="nav-btn active" data-tab="tab-encoder">Encoder &amp; Queue</button>
+        <button class="nav-btn" data-tab="tab-raw">Library</button>
+        <button class="nav-btn" data-tab="tab-downloads">Downloads <span id="nav-dl-count"></span></button>
+
+        <div class="sys-meter">
+            <div class="spread"><span>CPU (<span id="cpu-cores">-</span> threads)</span><span id="cpu-val">0%</span></div>
+            <div class="sys-meter-bar"><div class="sys-meter-fill" id="cpu-fill"></div></div>
+            <div class="spread"><span>RAM</span><span id="ram-val">-</span></div>
+            <div class="sys-meter-bar"><div class="sys-meter-fill" id="ram-fill" style="background:#28a745;"></div></div>
+            <div class="spread"><span>Output disk free</span><span id="disk-val">-</span></div>
+        </div>
+    </aside>
+
+    <main>
+        <!-- Encoder & Queue -->
+        <div class="tab-content active" id="tab-encoder">
+            <header>
+                <div>
+                    <h1>Encoder &amp; Queue</h1>
+                    <p class="muted" id="queue-sub">0 jobs queued</p>
+                </div>
+                <div class="row">
+                    <button class="btn btn-success" id="btn-start">Start Queue</button>
+                    <button class="btn btn-outline" id="btn-clear-done">Clear Done</button>
+                    <button class="btn btn-danger" id="btn-cancel-all">Cancel All</button>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>1. Source Folder</span>
+                    <div class="row">
+                        <button class="btn btn-outline btn-sm" id="btn-new-folder">+ New Folder</button>
+                        <button class="btn btn-success btn-sm" id="btn-rescan">Scan Folder</button>
+                    </div>
+                </div>
+                <select id="sel-folder" style="width:100%; font-weight:600; font-size:13px; color:#4da3ff;"></select>
+                <div id="scanned-container" style="display:none; margin-top:10px;">
+                    <div class="spread" style="margin-bottom:6px;">
+                        <span id="scanned-title" style="font-size:12px; font-weight:600; color:#4da3ff;"></span>
+                        <button class="btn btn-outline btn-sm" id="btn-toggle-all">Select All / None</button>
+                    </div>
+                    <div id="scanned-list" class="list-box" style="max-height:200px;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>2. Audio &amp; Subtitle Tracks</span>
+                    <span class="muted" style="font-weight:normal;">Probed from the first file in the folder</span>
+                </div>
+                <div class="form-grid" style="margin-bottom:10px;">
+                    <div class="form-group">
+                        <label>Audio tracks to keep</label>
+                        <select id="cfg-audio-tracks" data-options="audio_tracks"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Preferred language (ISO 639 code)</label>
+                        <input type="text" id="cfg-audio-language" maxlength="12" placeholder="e.g. eng, spa, fra">
+                    </div>
+                </div>
+                <div class="stream-box">
+                    <div class="spread" style="margin-bottom:6px;">
+                        <span style="font-size:11px; font-weight:700; color:#fff; text-transform:uppercase;">Subtitles to keep</span>
+                        <label class="row" style="font-size:11px; cursor:pointer; text-transform:none; color:#4da3ff;">
+                            <input type="checkbox" id="cfg-smart-subs" checked>
+                            <span>Smart flags for preferred-language subtitles (signs/songs forced with that audio, full subs default otherwise)</span>
+                        </label>
+                    </div>
+                    <div id="subs-list" style="max-height:130px; overflow-y:auto; font-size:12px;">
+                        <p class="muted">Scan a folder to list its subtitle tracks.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">3. Encoding Settings</div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Rate control</label><select id="cfg-rate-mode" data-options="rate_control"></select></div>
+                    <div class="form-group" id="group-cq"><label>Video quality (CQ)</label><select id="cfg-cq" data-options="cq" data-default="22"></select></div>
+                    <div class="form-group" id="group-size" style="display:none;"><label>Target size per file (MB)</label><input type="number" id="cfg-target-size" value="1500" min="10"></div>
+                    <div class="form-group"><label>SVT-AV1 preset</label><select id="cfg-preset" data-options="preset" data-default="6"></select></div>
+                    <div class="form-group"><label>Film grain synthesis</label><select id="cfg-grain" data-options="grain"></select></div>
+                    <div class="form-group"><label>Color format</label><select id="cfg-depth" data-options="color"></select></div>
+                    <div class="form-group"><label>Resolution</label><select id="cfg-res" data-options="resolution"></select></div>
+                    <div class="form-group"><label>Opus bitrate (kbps)</label><select id="cfg-audio-bitrate" data-options="bitrate" data-default="96"></select></div>
+                    <div class="form-group"><label>Audio channels</label><select id="cfg-channels" data-options="channels"></select></div>
+                    <div class="form-group"><label>Loudness normalization</label><select id="cfg-norm" data-options="norm"></select></div>
+                    <div class="form-group">
+                        <label>Parallel workers</label>
+                        <select id="cfg-workers">
+                            <option value="1">1 (sequential)</option>
+                            <option value="2">2</option>
+                            <option value="4">4</option>
+                            <option value="6">6</option>
+                            <option value="8" selected>8</option>
+                            <option value="12">12</option>
+                            <option value="16">16</option>
+                            <option value="24">24</option>
+                            <option value="32">32</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="spread" style="margin-top:14px;">
+                    <span class="muted">Output folder: <code id="out-dest-label">-</code></span>
+                    <div class="row">
+                        <button class="btn btn-outline" id="btn-autotune">Auto-Tune First Selected File</button>
+                        <button class="btn btn-success" id="btn-add-queue">Add Selected to Queue</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="autotune-card" style="display:none;">
+                <div class="card-title">
+                    <span>Auto-Tune: <span id="autotune-file"></span></span>
+                    <button class="btn btn-outline btn-sm" id="btn-autotune-cancel">Cancel</button>
+                </div>
+                <p class="muted" id="autotune-status"></p>
+                <div class="pbar-line" style="margin-top:6px;"><div class="pbar-fill" id="autotune-pbar"></div></div>
+                <div id="autotune-results"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Encode Queue</div>
+                <div id="jobs-container"><p class="empty">The queue is empty. Scan a folder above and add files.</p></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>Log</span>
+                    <button class="btn btn-outline btn-sm" id="btn-clear-log">Clear</button>
+                </div>
+                <div id="log-box"></div>
+            </div>
+        </div>
+
+        <!-- Library -->
+        <div class="tab-content" id="tab-raw">
+            <header>
+                <div>
+                    <h1>Library</h1>
+                    <p class="muted">Source files in <code class="input-dir-label">-</code></p>
+                </div>
+                <div class="row">
+                    <button class="btn btn-danger" id="btn-clean-encoded">Delete Already-Encoded Sources</button>
+                    <button class="btn btn-outline" id="btn-move-selected">Move Selected to Folder</button>
+                    <button class="btn btn-outline" id="btn-delete-selected">Delete Selected</button>
+                    <button class="btn btn-outline" id="btn-refresh-raw">Refresh</button>
+                </div>
+            </header>
+            <div class="card">
+                <div class="card-title">
+                    <span>Folders</span>
+                    <button class="btn btn-outline btn-sm" id="btn-new-folder-2">+ New Folder</button>
+                </div>
+                <div id="raw-folders-summary" class="row" style="flex-wrap:wrap;"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span>Files in input root (<span id="raw-file-count">0</span> files, <span id="raw-total-size">0</span> GB)</span>
+                </div>
+                <div id="raw-files-list" style="max-height:480px; overflow-y:auto;"></div>
+            </div>
+        </div>
+
+        <!-- Downloads -->
+        <div class="tab-content" id="tab-downloads">
+            <header>
+                <div>
+                    <h1>Downloads</h1>
+                    <p class="muted">Download files from direct HTTP(S) links into <code class="input-dir-label">-</code>. Interrupted downloads can be resumed.</p>
+                </div>
+            </header>
+            <div class="card">
+                <div class="card-title">Add Links</div>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label>Direct download links (one per line)</label>
+                    <textarea id="dl-links" rows="5" placeholder="https://example.com/video.mkv"></textarea>
+                </div>
+                <div class="form-grid" style="margin-bottom:12px;">
+                    <div class="form-group">
+                        <label>Subfolder (optional)</label>
+                        <input type="text" id="dl-subfolder" placeholder="Leave empty to save in the input root">
+                    </div>
+                    <div class="form-group" style="justify-content:flex-end;">
+                        <label class="row" style="cursor:pointer; text-transform:none; color:#fff; font-size:12px;">
+                            <input type="checkbox" id="dl-add-queue">
+                            <span>Add to the encode queue when finished (uses the current encoding settings)</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="spread">
+                    <span class="muted" id="dl-message"></span>
+                    <button class="btn btn-success" id="btn-start-downloads">Start Downloads</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span>Transfers (<span id="dl-count">0</span>)</span>
+                    <button class="btn btn-outline btn-sm" id="btn-clear-downloads">Clear Finished</button>
+                </div>
+                <div id="downloads-list"><p class="empty">No transfers yet.</p></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
