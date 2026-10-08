@@ -42,15 +42,17 @@ optional HDR-to-SDR tone-mapping through FFmpeg's `libplacebo` filter (Vulkan).
 
 ## Screenshots
 
-<!-- TODO: add screenshots -->
-| Encoder & queue | Auto-tune results | Downloads |
-| --- | --- | --- |
-| _screenshot_ | _screenshot_ | _screenshot_ |
+Encode queue with finished and running jobs:
 
-## Benchmarks
+![Encode queue](docs/screenshots/queue.png)
 
-> **TODO:** add measured results (encode speed, output size vs. source, VMAF)
-> from real files, including the hardware and settings used.
+Auto-tune results for a sample file:
+
+![Auto-tune results](docs/screenshots/autotune.png)
+
+Downloads in progress, set to add the files to the queue when they finish:
+
+![Downloads](docs/screenshots/downloads.png)
 
 ## Architecture
 
